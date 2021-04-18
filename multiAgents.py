@@ -245,18 +245,22 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         action_minimax_list = []
         for action in gameState.getLegalActions(0):
             successor_gameState = gameState.generateSuccessor(0, action)
-            action_minimax_list.append((action, self.minimax(successor_gameState, turn + 1)))
+            action_minimax_list.append((action, self.expectimax(successor_gameState, turn + 1)))
         return max(action_minimax_list, key=lambda t: t[1])
 
     def ghostTurn(self, gameState, turn):
-        action_minimax_list = []
+        scores = []
         agentIndex = turn % gameState.getNumAgents()
+
         for action in gameState.getLegalActions(agentIndex):
             ghostSuccessor_gameState = gameState.generateSuccessor(agentIndex, action)
-            action_minimax_list.append((action, self.minimax(ghostSuccessor_gameState, turn + 1)))
-        return min(action_minimax_list, key=lambda t: t[1])
+            scores.append(self.expectimax(ghostSuccessor_gameState, turn + 1))
 
-    def minimax(self, gameState, turn):
+        avg = sum(scores) / len(scores)
+        action = random.choice(gameState.getLegalActions(agentIndex))
+        return action, avg
+
+    def expectimax(self, gameState, turn):
         if gameState.isWin() or gameState.isLose() or turn is gameState.getNumAgents() * self.depth:
             return self.evaluationFunction(gameState)
 
@@ -275,8 +279,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        action, _ = self.pacmanTurn(gameState)
+        return action
 
 
 def betterEvaluationFunction(currentGameState):
