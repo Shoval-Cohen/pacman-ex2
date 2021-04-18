@@ -241,6 +241,33 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       Your expectimax agent (question 4)
     """
 
+    def pacmanTurn(self, gameState, turn=0):
+        action_minimax_list = []
+        for action in gameState.getLegalActions(0):
+            successor_gameState = gameState.generateSuccessor(0, action)
+            action_minimax_list.append((action, self.minimax(successor_gameState, turn + 1)))
+        return max(action_minimax_list, key=lambda t: t[1])
+
+    def ghostTurn(self, gameState, turn):
+        action_minimax_list = []
+        agentIndex = turn % gameState.getNumAgents()
+        for action in gameState.getLegalActions(agentIndex):
+            ghostSuccessor_gameState = gameState.generateSuccessor(agentIndex, action)
+            action_minimax_list.append((action, self.minimax(ghostSuccessor_gameState, turn + 1)))
+        return min(action_minimax_list, key=lambda t: t[1])
+
+    def minimax(self, gameState, turn):
+        if gameState.isWin() or gameState.isLose() or turn is gameState.getNumAgents() * self.depth:
+            return self.evaluationFunction(gameState)
+
+        # It's pacman
+        if turn % gameState.getNumAgents() == 0:
+            _, value = self.pacmanTurn(gameState, turn)
+            return value
+        else:
+            _, value = self.ghostTurn(gameState, turn)
+            return value
+
     def getAction(self, gameState):
         """
         Returns the expectimax action using self.depth and self.evaluationFunction
