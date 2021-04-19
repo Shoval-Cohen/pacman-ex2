@@ -288,10 +288,40 @@ def betterEvaluationFunction(currentGameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION:
+    Starts from the score of the game.
+
+    More score while close to the lovely ghosts (scared that can be reached),
+    less while close to the angry ghosts
+
+    Better score while there is less food, that gets as game score and win the game.
+    Much better score while this move taking the capsules number down,
+    eating scared ghost is the best way to get points.
+
+    And of course, the closet to food you are, you score get higher :)
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    pacman_pos = currentGameState.getPacmanPosition()
+    ghostStates = currentGameState.getGhostStates()
+    angryGhosts = [ghost.configuration.pos for ghost in ghostStates if
+                   ghost.scaredTimer == 0
+                   or manhattanDistance(pacman_pos,
+                                        ghost.configuration.pos) >= ghost.scaredTimer]
+    lovelyGhost = [ghost.configuration.pos for ghost in ghostStates if ghost.configuration.pos not in angryGhosts]
+
+    score = currentGameState.getScore()
+    score += 1 / (1 + sum([manhattanDistance(pacman_pos, ghost) for ghost in lovelyGhost]))
+    score -= 1 / (1 + sum([manhattanDistance(pacman_pos, ghost) for ghost in angryGhosts]))
+
+    score -= len(currentGameState.getFood().asList())
+    score -= 10 * len(currentGameState.getCapsules())
+
+    dist_to_food = 0
+    if len(currentGameState.getFood().asList()) != 0:
+        dist_to_food = min([manhattanDistance(pacman_pos, food) for food in currentGameState.getFood().asList()])
+    score += 1 / float(1 + dist_to_food)
+
+    return score
 
 
 # Abbreviation
